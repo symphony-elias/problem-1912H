@@ -8,28 +8,52 @@ import java.util.Set;
 
 public class Main {
 
-  public static void main(String[] args) {
-    List<Set<Integer>> graph = getGraph();
+  public static class CommuteGraph {
 
-    System.out.println("Graph: " + graph);
+    private List<Set<Integer>> graph;
+
+    public static CommuteGraph parseGraph() {
+      Scanner scanner = new Scanner(System.in);
+      int numberOfCities = scanner.nextInt();
+      int numberOfPassengers = scanner.nextInt();
+
+      List<Set<Integer>> graph = new ArrayList<>(numberOfCities);
+      for (int i = 0; i < numberOfCities; i++) {
+        graph.add(new HashSet<>());
+      }
+
+      for (int i = 1; i < numberOfPassengers; i++) {
+        // cities are indexed starting from 1
+        int departure = scanner.nextInt() - 1;
+        int arrival = scanner.nextInt() - 1;
+        graph.get(departure).add(arrival);
+      }
+      return new CommuteGraph(graph);
+    }
+
+    public CommuteGraph(List<Set<Integer>> graph) {
+      this.graph = graph;
+    }
+
+    public List<Leg> solve() {
+      return new ArrayList<>();
+    }
   }
 
-  private static List<Set<Integer>> getGraph() {
-    Scanner scanner = new Scanner(System.in);
-    int numberOfCities = scanner.nextInt();
-    int numberOfPassengers = scanner.nextInt();
+  public record Leg(int start, int destination) {
+  }
 
-    // cities are indexed starting from 1. First element is useless
-    List<Set<Integer>> graph = new ArrayList<>(numberOfCities + 1);
-    for (int i = 0; i < numberOfCities + 1; i++) {
-      graph.add(new HashSet<>());
-    }
+  public static void main(String[] args) {
+    CommuteGraph graph = CommuteGraph.parseGraph();
+    List<Leg> legs = graph.solve();
 
-    for (int i = 1; i <= numberOfPassengers; i++) {
-      int departure = scanner.nextInt();
-      int arrival = scanner.nextInt();
-      graph.get(departure).add(arrival);
+    if (legs.isEmpty()) {
+      System.out.println("-1");
+    } else {
+      System.out.println(legs.size());
+      for (Leg leg : legs) {
+        System.out.println(leg.start + " " + leg.destination);
+      }
     }
-    return graph;
   }
 }
