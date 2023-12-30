@@ -101,21 +101,23 @@ class CommuteGraphTest {
   @Test
   void testSolveWithThreeCitiesTwoPassengersMax() {
     List<Set<Integer>> graph = List.of(Set.of(2), Set.of(0, 2), Set.of(1));
-    List<Main.Leg> expectedLegs = List.of(new Main.Leg(1, 0), new Main.Leg(0, 2), new Main.Leg(2, 1));
+    List<Main.Leg> expectedLegs = List.of(new Main.Leg(1, 0), new Main.Leg(0, 2),
+        new Main.Leg(2, 1));
     assertIsSolution(graph, expectedLegs);
   }
 
   @Test
   void testSolveExample() {
-    List<Set<Integer>> graph = List.of(Set.of(1, 2, 4), Set.of(2), Set.of(), Set.of(1), Set.of());
-    List<Main.Leg> expectedLegs = List.of(new Main.Leg(0, 1), new Main.Leg(1, 2), new Main.Leg(2, 4), new Main.Leg(3, 1));
+    List<Set<Integer>> graph = List.of(Set.of(1, 2, 4), Set.of(2), Set.of(), Set.of(1), Set.of(0));
+    List<Main.Leg> expectedLegs = List.of(new Main.Leg(0, 1), new Main.Leg(1, 2),
+        new Main.Leg(2, 4), new Main.Leg(4, 0), new Main.Leg(3, 1));
     assertIsSolution(graph, expectedLegs);
   }
 
   @Test
   void testSolveImpossibleGraph() {
     List<Set<Integer>> graph = List.of(Set.of(1, 2), Set.of(0, 2), Set.of(0, 1));
-    assertEquals(List.of(), new Main.CommuteGraph(graph).solve());
+    assertEquals(null, new Main.CommuteGraph(graph).solve());
   }
 
   private void assertIsSolution(List<Set<Integer>> graph, List<Main.Leg> expectedLegs) {
