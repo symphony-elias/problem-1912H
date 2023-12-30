@@ -112,6 +112,12 @@ class CommuteGraphTest {
     assertIsSolution(graph, expectedLegs);
   }
 
+  @Test
+  void testSolveImpossibleGraph() {
+    List<Set<Integer>> graph = List.of(Set.of(1, 2), Set.of(0, 2), Set.of(0, 1));
+    assertEquals(List.of(), new Main.CommuteGraph(graph).solve());
+  }
+
   private void assertIsSolution(List<Set<Integer>> graph, List<Main.Leg> expectedLegs) {
     List<Main.Leg> legs = new Main.CommuteGraph(graph).solve();
     assertTrue(new Main.CommuteGraph(graph).isSolution(legs));

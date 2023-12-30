@@ -8,6 +8,9 @@ import java.util.Set;
 
 public class Main {
 
+  public record Leg(int start, int destination) {
+  }
+
   public static class CommuteGraph {
 
     // list index is the city number, set is the passengers with their desired destination.
@@ -56,11 +59,14 @@ public class Main {
       while (passengersLeft()) {
         int start = findCityWithMostPassengers(getCitiesWithPassengers());
         int destination = findCityWithMostPassengers(graph.get(start));
+        if (isInvalidLeg(start, destination)) {
+          return List.of(); // we couldn't find a valid solution
+        }
         catapultPassengers(start, destination);
         legs.add(new Leg(start, destination));
         rounds++;
         if (rounds == 1000) {
-          break;
+          return List.of(); // to avoid infinite loops
         }
       }
       return legs;
@@ -118,9 +124,6 @@ public class Main {
     private boolean isInvalidLeg(int start, int destination) {
       return start == destination || usedCatapults.contains(start);
     }
-  }
-
-  public record Leg(int start, int destination) {
   }
 
   public static void main(String[] args) {
