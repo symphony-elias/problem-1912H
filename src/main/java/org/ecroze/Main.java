@@ -11,8 +11,8 @@ public class Main {
   public static class CommuteGraph {
 
     // list index is the city number, set is the passengers with their desired destination.
-    private List<Set<Integer>> graph;
-    private Set<Integer> usedCatapults;
+    private final List<Set<Integer>> graph;
+    private final Set<Integer> usedCatapults;
 
     public static CommuteGraph parseGraph() {
       Scanner scanner = new Scanner(System.in);
@@ -48,11 +48,19 @@ public class Main {
 
     public List<Leg> solve() {
       ArrayList<Leg> legs = new ArrayList<>();
-      for (int city = 0; city < graph.size(); city++) {
-        Set<Integer> passengerDestinations = graph.get(city);
-        if (!passengerDestinations.isEmpty()) {
-          int destination = passengerDestinations.stream().findAny().get();
-          legs.add(new Leg(city, destination));
+      if (!passengersLeft()) {
+        return legs;
+      }
+
+      int rounds = 0;
+      while (passengersLeft()) {
+        int start = findCityWithMostPassengers(getCitiesWithPassengers());
+        int destination = findCityWithMostPassengers(graph.get(start));
+        catapultPassengers(start, destination);
+        legs.add(new Leg(start, destination));
+        rounds++;
+        if (rounds == 1000) {
+          break;
         }
       }
       return legs;
@@ -60,17 +68,55 @@ public class Main {
 
     public boolean isSolution(List<Leg> legs) {
       for (Leg leg : legs) {
-        if (usedCatapults.contains(leg.start())) {
-          return false; // catapult already used
+        if (isInvalidLeg(leg.start(), leg.destination())) {
+          return false; // this is not a valid leg
         }
-        usedCatapults.add(leg.start());
-
-        Set<Integer> destinations = graph.get(leg.start());
-        destinations.remove(leg.destination()); // remove passengers which arrive at wanted destination
-        graph.get(leg.destination()).addAll(destinations); // we keep all other passengers
-        destinations.clear(); // we remove passengers from the former city
+        catapultPassengers(leg.start(), leg.destination());
       }
-      return graph.stream().allMatch(Set::isEmpty);
+      return !passengersLeft();
+    }
+
+    private boolean passengersLeft() {
+      return graph.stream().anyMatch(s -> !s.isEmpty());
+    }
+
+    private int findCityWithMostPassengers(Set<Integer> possibleDestinations) {
+      int passengerCount = -1;
+      int city = -1;
+      for (int destination: possibleDestinations) {
+        int numberOfPassengers = graph.get(destination).size();
+        if (numberOfPassengers > passengerCount) {
+          passengerCount = numberOfPassengers;
+          city = destination;
+        }
+      }
+      return city;
+    }
+
+    private Set<Integer> getCitiesWithPassengers() {
+      Set<Integer> cities = new HashSet<>();
+      for (int i = 0; i < graph.size(); i++) {
+        if (!graph.get(i).isEmpty()) {
+          cities.add(i);
+        }
+      }
+      return cities;
+    }
+
+    private void catapultPassengers(int start, int destination) {
+      if (isInvalidLeg(start, destination)) {
+        throw new IllegalStateException("Catapult already used or destination same as start");
+      }
+      usedCatapults.add(start);
+
+      Set<Integer> destinations = graph.get(start);
+      destinations.remove(destination); // remove passengers which arrive at wanted destination
+      graph.get(destination).addAll(destinations); // we keep all other passengers
+      destinations.clear(); // we remove passengers from the former city
+    }
+
+    private boolean isInvalidLeg(int start, int destination) {
+      return start == destination || usedCatapults.contains(start);
     }
   }
 
@@ -86,7 +132,7 @@ public class Main {
     } else {
       System.out.println(legs.size());
       for (Leg leg : legs) {
-        System.out.println(leg.start + " " + leg.destination);
+        System.out.println((leg.start() + 1) + " " + (leg.destination + 1));
       }
     }
   }
