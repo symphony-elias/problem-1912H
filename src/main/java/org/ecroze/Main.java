@@ -10,7 +10,9 @@ public class Main {
 
   public static class CommuteGraph {
 
+    // list index is the city number, set is the passengers with their desired destination.
     private List<Set<Integer>> graph;
+    private Set<Integer> usedCatapults;
 
     public static CommuteGraph parseGraph() {
       Scanner scanner = new Scanner(System.in);
@@ -31,12 +33,44 @@ public class Main {
       return new CommuteGraph(graph);
     }
 
-    public CommuteGraph(List<Set<Integer>> graph) {
-      this.graph = graph;
+    public CommuteGraph(List<Set<Integer>> commuteGraph) {
+      // We want to have a deep copy
+      this.graph = new ArrayList<>(commuteGraph.size());
+      for (Set<Integer> integers : commuteGraph) {
+        this.graph.add(new HashSet<>(integers));
+      }
+      this.usedCatapults = new HashSet<>();
+    }
+
+    public CommuteGraph(CommuteGraph commuteGraph) {
+      this(commuteGraph.graph);
     }
 
     public List<Leg> solve() {
-      return new ArrayList<>();
+      ArrayList<Leg> legs = new ArrayList<>();
+      for (int city = 0; city < graph.size(); city++) {
+        Set<Integer> passengerDestinations = graph.get(city);
+        if (!passengerDestinations.isEmpty()) {
+          int destination = passengerDestinations.stream().findAny().get();
+          legs.add(new Leg(city, destination));
+        }
+      }
+      return legs;
+    }
+
+    public boolean isSolution(List<Leg> legs) {
+      for (Leg leg : legs) {
+        if (usedCatapults.contains(leg.start())) {
+          return false; // catapult already used
+        }
+        usedCatapults.add(leg.start());
+
+        Set<Integer> destinations = graph.get(leg.start());
+        destinations.remove(leg.destination()); // remove passengers which arrive at wanted destination
+        graph.get(leg.destination()).addAll(destinations); // we keep all other passengers
+        destinations.clear(); // we remove passengers from the former city
+      }
+      return graph.stream().allMatch(Set::isEmpty);
     }
   }
 
